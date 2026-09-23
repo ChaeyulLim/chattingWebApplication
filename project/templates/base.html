@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}담소{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="nav">
+        <a class="brand" href="/">담소</a>
+        <nav class="nav-links">
+            {% if session.get("user_id") %}
+                <a href="/room">내 채팅방</a>
+                <span class="muted">{{ session.get("user_id") }}</span>
+                <a href="/logout">로그아웃</a>
+            {% else %}
+                <a href="/login">로그인</a>
+                <a href="/signup">회원가입</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% with notices = get_flashed_messages(category_filter=["notice"]) %}
+        {% if notices %}
+            <div class="toast-stack" id="toastStack">
+                {% for msg in notices %}
+                    <div class="toast">{{ msg }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+
+    <script>
+        document.querySelectorAll(".toast").forEach((el, i) => {
+            setTimeout(() => el.classList.add("hide"), 3000 + i * 200);
+            setTimeout(() => el.remove(), 3600 + i * 200);
+        });
+    </script>
+</body>
+</html>

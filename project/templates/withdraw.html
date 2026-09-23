@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}회원 탈퇴 · 담소{% endblock %}
+
+{% block content %}
+<div class="card auth">
+    <h1 class="title center">회원 탈퇴</h1>
+    <p class="muted" style="margin-top: -8px;">탈퇴하면 참여 중인 모든 방에서 나가지고, 이 아이디는 다시 사용할 수 없습니다.</p>
+    {% with errors = get_flashed_messages(category_filter=["form_error"]) %}
+        {% if errors %}
+            <p class="error">{{ errors[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <form action="/withdraw" method="POST">
+        <label class="field">
+            <span>비밀번호 확인</span>
+            <input name="UserPW" type="password" placeholder="비밀번호를 입력해주세요." required>
+        </label>
+        <button class="btn btn-block" type="submit">탈퇴하기</button>
+    </form>
+    <p class="center muted" style="margin: 16px 0 0;"><a href="/">취소하고 돌아가기</a></p>
+</div>
+{% endblock %}

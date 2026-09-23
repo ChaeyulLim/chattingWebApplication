@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 · 담소{% endblock %}
+
+{% block content %}
+<div class="card auth">
+    <h1 class="title center">로그인</h1>
+    {% with errors = get_flashed_messages(category_filter=["form_error"]) %}
+        {% if errors %}
+            <p class="error">{{ errors[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <form action="/login" method="POST">
+        <label class="field">
+            <span>아이디</span>
+            <input name="UserID" type="text" placeholder="아이디를 입력해주세요." required>
+        </label>
+        <label class="field">
+            <span>비밀번호</span>
+            <input name="UserPW" type="password" placeholder="비밀번호를 입력해주세요." required>
+        </label>
+        <button class="btn btn-block" type="submit">로그인</button>
+    </form>
+    <p class="center muted" style="margin: 16px 0 0;">아직 계정이 없나요? <a href="/signup">회원가입</a></p>
+</div>
+{% endblock %}

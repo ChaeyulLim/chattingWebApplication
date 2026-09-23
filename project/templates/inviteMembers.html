@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}멤버 초대 · 담소{% endblock %}
+
+{% block content %}
+<h1 class="title">멤버 초대</h1>
+<p class="muted" style="margin-top: -8px;">{{ room.RI_NAME or "(이름 없음)" }} 방에 초대할 멤버를 선택하세요.</p>
+
+<form class="card" action="/room/{{ room.RI_ID }}/invite" method="POST">
+    <div class="field">
+        <span class="label">초대할 멤버</span>
+        <details class="dropdown" open>
+            <summary>멤버 선택</summary>
+            <div class="dropdown-body">
+                {% for u in users %}
+                    <label class="check">
+                        <input type="checkbox" name="members" value="{{ u.UI_ID }}">
+                        {{ u.UI_NAME }} <em>({{ u.UI_ID }})</em>
+                    </label>
+                {% else %}
+                    <p class="empty">초대할 수 있는 회원이 없어요.</p>
+                {% endfor %}
+            </div>
+        </details>
+    </div>
+
+    <div class="actions">
+        <button class="btn" type="submit">초대하기</button>
+        <a class="btn btn-ghost" href="/room/{{ room.RI_ID }}">취소</a>
+    </div>
+</form>
+{% endblock %}

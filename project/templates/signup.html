@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 · 담소{% endblock %}
+
+{% block content %}
+<div class="card auth">
+    <h1 class="title center">회원가입</h1>
+    {% with errors = get_flashed_messages(category_filter=["form_error"]) %}
+        {% if errors %}
+            <p class="error">{{ errors[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <form action="/signup" method="POST">
+        <label class="field">
+            <span>아이디</span>
+            <input name="UserID" type="text" maxlength="50" placeholder="아이디를 입력해주세요." required>
+        </label>
+        <label class="field">
+            <span>비밀번호</span>
+            <input name="UserPW" type="password" placeholder="비밀번호를 입력해주세요." required>
+        </label>
+        <label class="field">
+            <span>이름</span>
+            <input name="UserName" type="text" maxlength="50" placeholder="이름을 입력해주세요." required>
+        </label>
+        <label class="field">
+            <span>메일</span>
+            <input name="UserMail" type="email" maxlength="50" placeholder="name@example.com" required>
+        </label>
+        <button class="btn btn-block" type="submit">가입하기</button>
+    </form>
+    <p class="center muted" style="margin: 16px 0 0;">이미 계정이 있나요? <a href="/login">로그인</a></p>
+</div>
+{% endblock %}

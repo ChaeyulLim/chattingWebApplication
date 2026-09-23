@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}방 만들기 · 담소{% endblock %}
+
+{% block content %}
+<h1 class="title">방 만들기</h1>
+
+<form class="card" action="/room/new" method="POST" id="roomForm">
+    {% with errors = get_flashed_messages(category_filter=["form_error"]) %}
+        {% if errors %}
+            <p class="error">{{ errors[0] }}</p>
+        {% endif %}
+    {% endwith %}
+
+    <div class="field">
+        <span class="label">종류</span>
+        <div class="choice">
+            <label><input type="radio" name="type" value="G" checked> 그룹</label>
+            <label><input type="radio" name="type" value="D"> 1:1</label>
+        </div>
+    </div>
+
+    <label class="field" id="roomNameField">
+        <span>방 이름</span>
+        <input name="user_name" id="roomNameInput" type="text" maxlength="50" placeholder="예: 스터디 모임" required>
+    </label>
+
+    <div class="field">
+        <span class="label" id="memberLabel">참여할 멤버</span>
+        <details class="dropdown">
+            <summary>멤버 선택</summary>
+            <div class="dropdown-body">
+                {% for u in users %}
+                    <label class="check">
+                        <input type="checkbox" name="members" value="{{ u.UI_ID }}" class="member-check">
+                        {{ u.UI_NAME }} <em>({{ u.UI_ID }})</em>
+                    </label>
+                {% else %}
+                    <p class="empty">선택할 수 있는 회원이 없어요.</p>
+                {% endfor %}
+            </div>
+        </details>
+    </div>
+
+    <button class="btn btn-block" type="submit">방 만들기</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const typeInputs = document.querySelectorAll('input[name="type"]');
+    const roomNameField = document.getElementById("roomNameField");
+    const roomNameInput = document.getElementById("roomNameInput");
+    const memberLabel = document.getElementById("memberLabel");
+    const memberChecks = document.querySelectorAll(".member-check");
+
+    function isDm() {
+        return document.querySelector('input[name="type"]:checked').value === "D";
+    }
+
+    function onTypeChange() {
+        const dm = isDm();
+        roomNameField.style.display = dm ? "none" : "";
+        roomNameInput.required = !dm;
+        memberLabel.textContent = dm ? "대화 상대 선택 (1명)" : "참여할 멤버";
+        if (dm) {
+            const checked = [...memberChecks].filter(cb => cb.checked);
+            checked.slice(1).forEach(cb => cb.checked = false);   // 1:1로 바꾸면 첫 번째만 남기고 해제
+        }
+    }
+
+    typeInputs.forEach(input => input.addEventListener("change", onTypeChange));
+
+    memberChecks.forEach(cb => {
+        cb.addEventListener("change", () => {
+            if (isDm() && cb.checked) {
+                memberChecks.forEach(other => {
+                    if (other !== cb) other.checked = false;   // 1:1은 한 명만 선택되게
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

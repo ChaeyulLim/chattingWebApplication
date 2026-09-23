@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}담소{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1 class="title">담소</h1>
+    {% if user_id %}
+        <p>{{ session.get("user_name") }}님, 반갑습니다.<br>참여 중인 방에서 이야기를 이어가 보세요.</p>
+        <div class="actions">
+            <a class="btn" href="/room">내 채팅방</a>
+            <a class="btn btn-ghost" href="/room/new">방 만들기</a>
+        </div>
+        <p class="muted" style="margin-top: 32px;"><a href="/info">확인용: 회원/방 정보</a></p>
+        <p class="muted"><a href="/withdraw">회원 탈퇴</a></p>
+    {% else %}
+        <p>가까운 사람과 편하게 나누는 이야기.<br>로그인하고 대화를 시작해 보세요.</p>
+        <div class="actions">
+            <a class="btn" href="/login">로그인</a>
+            <a class="btn btn-ghost" href="/signup">회원가입</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

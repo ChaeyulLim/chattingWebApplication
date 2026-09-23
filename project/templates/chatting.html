@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}채팅방 · 담소{% endblock %}
+
+{% block content %}
+<div class="chat" data-room-id="{{ room_id }}" data-me="{{ session.get('user_id') }}">
+    <div class="chat-head">
+        <a href="/room">&larr; 목록</a>
+        <h1 class="title">{{ room_name }}</h1>
+        <span class="muted">인원 {{ member_count }}명</span>
+        <div class="chat-head-actions">
+            {% if room.RI_TYPE == "G" %}
+                <a class="btn btn-ghost" href="/room/{{ room_id }}/invite">멤버 초대</a>
+            {% endif %}
+            <form action="/room/{{ room_id }}/leave" method="POST" onsubmit="return confirm('정말 이 방을 나가시겠습니까?')">
+                <button class="btn btn-ghost" type="submit">나가기</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="messages" class="messages" data-last-date="{{ messages[-1].CM_DATE.strftime('%Y.%m.%d') if messages else '' }}">
+        {% set ns = namespace(last_date=None) %}
+        {% for m in messages %}
+            {% set cur_date = m.CM_DATE.strftime("%Y.%m.%d") %}
+            {% if cur_date != ns.last_date %}
+                <div class="date-divider">{{ cur_date }}</div>
+                {% set ns.last_date = cur_date %}
+            {% endif %}
+            <div class="msg {{ 'mine' if m.UI_ID == session.get('user_id') else '' }}">
+                <div class="meta">
+                    <span class="who">{{ names.get(m.UI_ID, m.UI_ID) }}</span>
+                    <span>{{ m.CM_DATE.strftime("%H:%M") }}</span>
+                </div>
+                <div class="bubble">{{ m.CM_MESSAGE }}</div>
+            </div>
+        {% else %}
+            <p class="empty" id="emptyNote">대화를 시작해 보세요.</p>
+        {% endfor %}
+    </div>
+
+    <form class="chat-form" onsubmit="sendMessage(event)">
+        <input id="msgInput" type="text" maxlength="255" placeholder="메시지를 입력하세요" autocomplete="off" required>
+        <button class="btn" type="submit">전송</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+
+    const chat = document.querySelector(".chat");
+    const roomId = Number(chat.dataset.roomId);
+    const me = chat.dataset.me;
+
+    const box = document.getElementById("messages");
+    box.scrollTop = box.scrollHeight;
+
+    let lastDate = box.dataset.lastDate || "";            // 서버가 그려준 마지막 메시지 날짜를 이어받는다.
+
+    socket.on("connect", () => {
+        socket.emit("join", {room_id: roomId});
+    });
+
+    // 받은 메시지를 화면에 붙인다. 서버가 그려준 과거 메시지와 같은 모양(div 구조)으로 만든다.
+    function addMessage(user, userName, text, time, date) {
+        const note = document.getElementById("emptyNote");
+        if (note) note.remove();                      // "대화를 시작해 보세요" 문구 제거
+
+        if (date && date !== lastDate) {
+            const divider = document.createElement("div");
+            divider.className = "date-divider";
+            divider.textContent = date;
+            box.appendChild(divider);
+            lastDate = date;
+        }
+
+        const wrap = document.createElement("div");
+        wrap.className = (user === me) ? "msg mine" : "msg";   // === 는 파이썬의 ==, ? : 는 한 줄 if-else
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const who = document.createElement("span");
+        who.className = "who";
+        who.textContent = userName + " ";              // textContent: 글자 그대로 넣기 (악성 스크립트 실행 방지)
+
+        const when = document.createElement("span");
+        when.textContent = time;
+
+        meta.append(who, when);                       // append: 여러 요소를 한 번에 붙이기
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+
+        wrap.append(meta, bubble);
+        box.appendChild(wrap);
+        box.scrollTop = box.scrollHeight;             // 맨 아래로 스크롤
+    }
+
+    socket.on("receive_message", (data) => {
+        addMessage(data.user, data.user_name, data.text, data.time, data.date);
+    });
+
+    function sendMessage(event) {
+        event.preventDefault();                       // form 제출 시 페이지가 새로고침되는 것을 막기
+        const input = document.getElementById("msgInput");
+        socket.emit("send_message", {room_id: roomId, text: input.value});
+        input.value = "";
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}회원/방 정보 · 담소{% endblock %}
+
+{% block content %}
+<h1 class="title">회원/방 정보</h1>
+<p class="muted" style="margin-top: -8px;">개발 중 확인용 페이지예요. 배포 전에 삭제할 예정입니다.</p>
+
+<h2 style="font-size: 16px; font-weight: 500;">회원 ({{ users|length }}명)</h2>
+<div class="table-wrap">
+    <table>
+        <tr>
+            <th>아이디</th><th>이름</th><th>메일</th><th>가입일</th><th>탈퇴일</th>
+        </tr>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.UI_ID }}</td>
+            <td>{{ u.UI_NAME }}</td>
+            <td>{{ u.UI_MAIL }}</td>
+            <td>{{ u.UI_RDATE }}</td>
+            <td>{{ u.UI_WITHDRAWN or "-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<h2 style="font-size: 16px; font-weight: 500;">방 ({{ rooms|length }}개)</h2>
+<div class="table-wrap">
+    <table>
+        <tr>
+            <th>번호</th><th>방 이름</th><th>종류</th><th>인원</th><th>생성일</th><th>참여자</th>
+        </tr>
+        {% for r in rooms %}
+        {% set member_ids = members.get(r.RI_ID, []) %}
+        <tr>
+            <td>{{ r.RI_ID }}</td>
+            <td>
+                {% if r.RI_TYPE == "D" %}
+                    1:1 ({% for uid in member_ids %}{{ names.get(uid, uid) }}{% if not loop.last %}, {% endif %}{% endfor %})
+                {% else %}
+                    {{ r.RI_NAME or "-" }}
+                {% endif %}
+            </td>
+            <td>{{ {"G": "그룹", "D": "1:1", "O": "오픈", "Group": "그룹", "Dm": "1:1", "Open": "오픈"}.get(r.RI_TYPE, r.RI_TYPE) }}</td>
+            <td>{{ member_ids|length }}</td>
+            <td>{{ r.RI_RDATE }}</td>
+            <td class="wrap">
+                {% for uid in member_ids %}
+                    {{ names.get(uid, uid) }}({{ uid }}){% if not loop.last %}, {% endif %}
+                {% else %}
+                    -
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<a href="/">&larr; 메인</a>
+{% endblock %}
